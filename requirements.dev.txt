@@ -1,0 +1,5 @@
+# Requirments for the gpio_test-rfid package.
+
+python-periphery==2.3.0
+websockets==10.0
+httpx==0.21.1
