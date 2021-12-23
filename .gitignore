@@ -1,3 +1,15 @@
+# Project secific ignores
+_*
+balena-wifi*
+
+# Python Virtual Env files
+bin/
+include/
+pyvenv.cfg
+
+# VS Code configs
+.devcontainer
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

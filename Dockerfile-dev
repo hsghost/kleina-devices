@@ -1,0 +1,32 @@
+FROM python:3.10-alpine as build
+WORKDIR /app
+ADD ./requirements-build.txt /app/requirements-build.txt
+RUN apk add --no-cache build-base \
+    && python3 -m venv /app --upgrade-deps \
+    && source ./bin/activate \
+    && python3 -m pip install --no-cache-dir --upgrade -r requirements-build.txt \
+    && find /app/lib/python3.10/site-packages -name '*.c' -delete \
+    && find /app/lib/python3.10/site-packages -name '*.pxd' -delete \
+    && find /app/lib/python3.10/site-packages -name '*.pyd' -delete \
+    && find /app/lib/python3.10/site-packages -name '__pycache__' | xargs rm -r \
+    && find /app/lib64/python3.10/site-packages -name '*.c' -delete \
+    && find /app/lib64/python3.10/site-packages -name '*.pxd' -delete \
+    && find /app/lib64/python3.10/site-packages -name '*.pyd' -delete
+    # && find /app/lib64/python3.10/site-packages -name '__pycache__' | xargs rm -r
+
+FROM python:3.10-alpine as dev
+LABEL version="0.0.1-dev"
+LABEL maintainer="15333619+hsghost@users.noreply.github.com"
+WORKDIR /app
+RUN apk add --no-cache git
+RUN git config --global user.name "hsghost" \
+    && git config --global user.email "15333619+hsghost@users.noreply.github.com" \
+    && git clone -n "https://github.com/hsghost/kleina-devices.git" . \
+    && git checkout dev \
+    && (git config --global --unset http.proxy ; exit 0) # 006
+RUN python3 -m venv /app --upgrade-deps \
+    && source ./bin/activate \
+    && python3 -m pip install --no-cache-dir -r requirements-dev.txt
+COPY --from=build /app/lib/python3.10/site-packages ./lib/python3.10/site-packages
+COPY --from=build /app/lib64/python3.10/site-packages ./lib64/python3.10/site-packages
+CMD [ "python3" ]
